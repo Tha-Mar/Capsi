@@ -1,4 +1,4 @@
-import type { CatalogDesign } from "@/lib/designs"
+import type { CatalogDesign } from "@/lib/design-shared"
 
 type SiteHeroProps = {
   featuredDesign?: CatalogDesign

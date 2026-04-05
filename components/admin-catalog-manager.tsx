@@ -8,7 +8,10 @@ import {
   reorderDesignsAction,
   updateDesignAction,
 } from "@/app/admin/actions"
-import { designCategories, type CatalogDesign } from "@/lib/designs"
+import {
+  designCategories,
+  type CatalogDesign,
+} from "@/lib/design-shared"
 
 type AdminCatalogManagerProps = {
   designs: CatalogDesign[]

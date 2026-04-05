@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 
-import type { CatalogDesign } from "@/lib/designs"
+import type { CatalogDesign } from "@/lib/design-shared"
 
 type DesignLibraryProps = {
   designs: CatalogDesign[]

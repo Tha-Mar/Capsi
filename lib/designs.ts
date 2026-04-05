@@ -1,6 +1,8 @@
-import type { CSSProperties } from "react"
-
 import { createClient } from "@/lib/supabase/server"
+import {
+  designCategories,
+  type CatalogDesign,
+} from "@/lib/design-shared"
 import { getSupabaseEnv } from "@/lib/supabase/env"
 
 const colorways = [
@@ -76,30 +78,6 @@ const fitNotes = [
   "Relaxed fit with adjustable back ties.",
   "Designed to stay secure through long shifts.",
 ] as const
-
-export const designCategories = [
-  "Popular",
-  "Sports",
-  "Floral",
-  "Geometric",
-  "Animals",
-  "Seasonal",
-  "Classic",
-] as const
-
-export type CatalogDesign = {
-  id: string
-  name: string
-  collection: string
-  category: string
-  about: string | null
-  availability: string
-  imageUrl: string
-  isFeatured: boolean
-  isVisible: boolean
-  sortOrder: number | null
-  previewStyle?: CSSProperties
-}
 
 type DesignRow = {
   id: string
