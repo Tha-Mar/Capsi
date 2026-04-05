@@ -98,6 +98,7 @@ export type CatalogDesign = {
   imageUrl: string
   isFeatured: boolean
   isVisible: boolean
+  sortOrder: number | null
   previewStyle?: CSSProperties
 }
 
@@ -144,6 +145,7 @@ function createPlaceholderDesigns(): CatalogDesign[] {
       imageUrl: isFeatured ? "/DrWoof_Jan24_Ecomm8198-web_1600x.webp" : "",
       isFeatured,
       isVisible: true,
+      sortOrder: index + 1,
       previewStyle: {
         backgroundImage: `${colorway.pattern}, ${colorway.background}`,
         backgroundSize: colorway.scale,
@@ -168,6 +170,7 @@ function mapDesignRow(row: DesignRow, index: number): CatalogDesign {
     imageUrl: row.image_url || "",
     isFeatured: Boolean(row.is_featured),
     isVisible: row.is_visible ?? true,
+    sortOrder: row.sort_order,
     previewStyle: row.image_url
       ? undefined
       : {

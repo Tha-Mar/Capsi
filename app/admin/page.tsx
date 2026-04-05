@@ -1,24 +1,12 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
-import {
-  createDesignAction,
-  deleteDesignAction,
-  signOutAction,
-  updateDesignAction,
-} from "@/app/admin/actions"
+import { signOutAction } from "@/app/admin/actions"
+import { AdminCatalogManager } from "@/components/admin-catalog-manager"
+import { SiteHero } from "@/components/site-hero"
 import { getAdminDesigns } from "@/lib/designs"
 import { getSupabaseEnv } from "@/lib/supabase/env"
 import { createClient } from "@/lib/supabase/server"
-
-const adminCategories = [
-  "Popular",
-  "Sports",
-  "Floral",
-  "Animals",
-  "Seasonal",
-  "Classic",
-]
 
 type AdminPageProps = {
   searchParams: Promise<{
@@ -45,233 +33,46 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   }
 
   const designs = await getAdminDesigns()
+  const featuredDesign = designs.find((design) => design.isFeatured) ?? designs[0]
 
   return (
-    <main className="min-h-screen bg-stone-100 px-6 py-10 text-stone-900">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
-        <div className="flex flex-col gap-4 rounded-[2rem] border border-stone-200 bg-white px-6 py-6 shadow-[0_20px_60px_rgba(120,84,62,0.08)] md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-rose-700">
-              Admin Dashboard
-            </p>
-            <h1 className="mt-2 font-[family:var(--font-display)] text-4xl leading-none">
-              Edit the live design catalog
-            </h1>
-            <p className="mt-2 text-sm leading-7 text-stone-600">
-              Signed in as {user.email}
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/"
-              className="rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-700"
-            >
-              View site
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.9),_rgba(255,248,243,0.85)_38%,_rgba(244,232,224,0.82)_100%)] text-stone-900">
+      <section className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-10 md:px-10 lg:px-12">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[1.5rem] border border-stone-200 bg-white/80 px-5 py-4 shadow-[0_14px_34px_rgba(120,84,62,0.06)]">
+          <div className="flex flex-wrap items-center gap-3 text-sm text-stone-600">
+            <Link href="/" className="font-semibold text-rose-700">
+              View public site
             </Link>
-            <form action={signOutAction}>
-              <button
-                type="submit"
-                className="rounded-full bg-stone-900 px-4 py-2 text-sm font-semibold text-white"
-              >
-                Sign out
-              </button>
-            </form>
+            <span>Signed in as {user.email}</span>
+            {params.success ? (
+              <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
+                Design {params.success}
+              </span>
+            ) : null}
+            {params.error ? (
+              <span className="rounded-full bg-rose-50 px-3 py-1 text-rose-700">
+                {params.error}
+              </span>
+            ) : null}
           </div>
+          <form action={signOutAction}>
+            <button
+              type="submit"
+              className="rounded-full bg-stone-900 px-4 py-2 text-sm font-semibold text-white"
+            >
+              Sign out
+            </button>
+          </form>
         </div>
 
-        {params.error ? (
-          <p className="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700">
-            {params.error}
-          </p>
-        ) : null}
+        <SiteHero
+          featuredDesign={featuredDesign}
+          adminMode
+          adminEmail={user.email ?? undefined}
+        />
 
-        {params.success ? (
-          <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-700">
-            Design {params.success}.
-          </p>
-        ) : null}
-
-        <section className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_20px_60px_rgba(120,84,62,0.08)]">
-          <h2 className="font-[family:var(--font-display)] text-3xl leading-none">
-            Add a new design
-          </h2>
-          <form action={createDesignAction} className="mt-6 grid gap-4 md:grid-cols-2">
-            <input
-              name="name"
-              required
-              placeholder="Design name"
-              className="rounded-2xl border border-stone-200 px-4 py-3"
-            />
-            <input
-              name="collection"
-              required
-              placeholder="Collection label"
-              className="rounded-2xl border border-stone-200 px-4 py-3"
-            />
-            <select
-              name="category"
-              defaultValue="Popular"
-              className="rounded-2xl border border-stone-200 px-4 py-3"
-            >
-              {adminCategories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-            <input
-              name="imageUrl"
-              placeholder="Image URL"
-              className="rounded-2xl border border-stone-200 px-4 py-3"
-            />
-            <input
-              name="material"
-              required
-              placeholder="Material details"
-              className="rounded-2xl border border-stone-200 px-4 py-3"
-            />
-            <input
-              name="fit"
-              required
-              placeholder="Fit details"
-              className="rounded-2xl border border-stone-200 px-4 py-3"
-            />
-            <input
-              name="availability"
-              required
-              placeholder="Availability"
-              className="rounded-2xl border border-stone-200 px-4 py-3"
-            />
-            <input
-              name="description"
-              placeholder="Optional description"
-              className="rounded-2xl border border-stone-200 px-4 py-3"
-            />
-            <label className="flex items-center gap-3 text-sm font-semibold text-stone-700">
-              <input type="checkbox" name="isFeatured" className="h-4 w-4" />
-              Set as featured hero design
-            </label>
-            <div className="md:col-span-2">
-              <button
-                type="submit"
-                className="rounded-full bg-rose-700 px-5 py-3 text-sm font-semibold text-white"
-              >
-                Add design
-              </button>
-            </div>
-          </form>
-        </section>
-
-        <section className="grid gap-5 lg:grid-cols-2">
-          {designs.map((design) => (
-            <form
-              key={design.id}
-              action={updateDesignAction}
-              className="grid gap-4 rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_20px_60px_rgba(120,84,62,0.08)]"
-            >
-              <input type="hidden" name="id" value={design.id} />
-              <div className="grid gap-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-stone-500">
-                  Existing design
-                </p>
-                <h2 className="font-[family:var(--font-display)] text-3xl leading-none">
-                  {design.name}
-                </h2>
-              </div>
-
-              <input
-                name="name"
-                defaultValue={design.name}
-                required
-                className="rounded-2xl border border-stone-200 px-4 py-3"
-              />
-              <input
-                name="collection"
-                defaultValue={design.collection}
-                required
-                className="rounded-2xl border border-stone-200 px-4 py-3"
-              />
-              <select
-                name="category"
-                defaultValue={design.category}
-                className="rounded-2xl border border-stone-200 px-4 py-3"
-              >
-                {adminCategories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-              <input
-                name="imageUrl"
-                defaultValue={design.imageUrl}
-                placeholder="Image URL"
-                className="rounded-2xl border border-stone-200 px-4 py-3"
-              />
-              <input
-                name="material"
-                defaultValue={design.material}
-                required
-                className="rounded-2xl border border-stone-200 px-4 py-3"
-              />
-              <input
-                name="fit"
-                defaultValue={design.fit}
-                required
-                className="rounded-2xl border border-stone-200 px-4 py-3"
-              />
-              <input
-                name="availability"
-                defaultValue={design.availability}
-                required
-                className="rounded-2xl border border-stone-200 px-4 py-3"
-              />
-              <input
-                name="description"
-                defaultValue={design.description ?? ""}
-                placeholder="Optional description"
-                className="rounded-2xl border border-stone-200 px-4 py-3"
-              />
-              <div className="flex flex-wrap gap-5 text-sm font-semibold text-stone-700">
-                <label className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    name="isFeatured"
-                    defaultChecked={design.isFeatured}
-                    className="h-4 w-4"
-                  />
-                  Featured
-                </label>
-                <label className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    name="isVisible"
-                    defaultChecked={design.isVisible}
-                    className="h-4 w-4"
-                  />
-                  Visible on site
-                </label>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <button
-                  type="submit"
-                  className="rounded-full bg-stone-900 px-5 py-3 text-sm font-semibold text-white"
-                >
-                  Save changes
-                </button>
-                <button
-                  type="submit"
-                  formAction={deleteDesignAction}
-                  className="rounded-full border border-rose-200 bg-white px-5 py-3 text-sm font-semibold text-rose-700"
-                >
-                  Delete design
-                </button>
-              </div>
-            </form>
-          ))}
-        </section>
-      </div>
+        <AdminCatalogManager designs={designs} />
+      </section>
     </main>
   )
 }
