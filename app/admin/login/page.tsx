@@ -54,7 +54,7 @@ export default async function AdminLoginPage({
               <div className="rounded-[1.5rem] border border-amber-200 bg-amber-50 p-6 text-sm leading-7 text-stone-700">
                 Add `NEXT_PUBLIC_SUPABASE_URL` and
                 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in
-                `/Users/usid/Documents/websites/Capsi/Capsi/.env.local` to
+                `/Users/usid/Documents/websites/Capsi/.env.local` to
                 enable login.
               </div>
             ) : (

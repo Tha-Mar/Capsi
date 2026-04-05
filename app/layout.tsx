@@ -17,7 +17,7 @@ const sans = Manrope({
 })
 
 export const metadata: Metadata = {
-  title: "Capsi | Handmade Scrub Hats",
+  title: "Capsy | Handmade Scrub Hats",
   description:
     "A handmade scrub hat catalog showcasing fabric designs, materials, and fit details.",
 }

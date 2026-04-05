@@ -19,7 +19,7 @@ export function SiteHero({
           <div className="space-y-6">
             <div className="flex flex-wrap items-center gap-3">
               <span className="rounded-full bg-stone-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-stone-50">
-                Capsi Studio
+                Capsy Studio
               </span>
               <span className="rounded-full border border-rose-200 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-rose-700">
                 Handmade Scrub Hats
