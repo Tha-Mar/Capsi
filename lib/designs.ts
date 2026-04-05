@@ -81,6 +81,7 @@ const fallbackCategories = [
   "Popular",
   "Sports",
   "Floral",
+  "Geometric",
   "Animals",
   "Seasonal",
   "Classic",
