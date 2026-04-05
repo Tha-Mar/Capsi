@@ -8,7 +8,7 @@ import {
   reorderDesignsAction,
   updateDesignAction,
 } from "@/app/admin/actions"
-import type { CatalogDesign } from "@/lib/designs"
+import { designCategories, type CatalogDesign } from "@/lib/designs"
 
 type AdminCatalogManagerProps = {
   designs: CatalogDesign[]
@@ -26,10 +26,8 @@ const emptyDesign: EditableDesign = {
   name: "",
   collection: "",
   category: "Popular",
-  material: "",
-  fit: "",
+  about: "",
   availability: "Available for custom orders",
-  description: "",
   imageUrl: "",
   isFeatured: false,
   isVisible: true,
@@ -216,17 +214,13 @@ export function AdminCatalogManager({ designs }: AdminCatalogManagerProps) {
             <div className="space-y-4 p-5">
               <div className="grid gap-3 rounded-[1.25rem] bg-stone-50 p-4 text-sm leading-6 text-stone-700">
                 <p>
-                  <span className="font-semibold text-stone-900">Material:</span>{" "}
-                  {design.material}
+                  <span className="font-semibold text-stone-900">About:</span>{" "}
+                  {design.about}
                 </p>
-                <p>
-                  <span className="font-semibold text-stone-900">Fit:</span>{" "}
-                  {design.fit}
-                </p>
-                {design.description ? (
+                {design.about ? (
                   <p>
-                    <span className="font-semibold text-stone-900">Details:</span>{" "}
-                    {design.description}
+                    <span className="font-semibold text-stone-900">Availability:</span>{" "}
+                    {design.availability}
                   </p>
                 ) : null}
               </div>
@@ -270,6 +264,7 @@ export function AdminCatalogManager({ designs }: AdminCatalogManagerProps) {
               action={
                 formState.mode === "create" ? createDesignAction : updateDesignAction
               }
+              encType="multipart/form-data"
               className="mt-6 grid gap-4 md:grid-cols-2"
             >
               {formState.mode === "edit" ? (
@@ -289,32 +284,28 @@ export function AdminCatalogManager({ designs }: AdminCatalogManagerProps) {
                 placeholder="Collection label"
                 className="rounded-2xl border border-stone-200 px-4 py-3"
               />
-              <input
+              <select
                 name="category"
                 defaultValue={formState.design.category}
                 required
-                placeholder="Category"
+                className="rounded-2xl border border-stone-200 px-4 py-3"
+              >
+                {designCategories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="file"
+                name="imageFile"
+                accept="image/*"
                 className="rounded-2xl border border-stone-200 px-4 py-3"
               />
               <input
-                name="imageUrl"
+                type="hidden"
+                name="existingImageUrl"
                 defaultValue={formState.design.imageUrl}
-                placeholder="Image URL"
-                className="rounded-2xl border border-stone-200 px-4 py-3"
-              />
-              <input
-                name="material"
-                defaultValue={formState.design.material}
-                required
-                placeholder="Material"
-                className="rounded-2xl border border-stone-200 px-4 py-3"
-              />
-              <input
-                name="fit"
-                defaultValue={formState.design.fit}
-                required
-                placeholder="Fit"
-                className="rounded-2xl border border-stone-200 px-4 py-3"
               />
               <input
                 name="availability"
@@ -323,11 +314,12 @@ export function AdminCatalogManager({ designs }: AdminCatalogManagerProps) {
                 placeholder="Availability"
                 className="rounded-2xl border border-stone-200 px-4 py-3"
               />
-              <input
-                name="description"
-                defaultValue={formState.design.description ?? ""}
-                placeholder="Optional description"
-                className="rounded-2xl border border-stone-200 px-4 py-3"
+              <textarea
+                name="about"
+                defaultValue={formState.design.about ?? ""}
+                placeholder="About"
+                rows={5}
+                className="rounded-2xl border border-stone-200 px-4 py-3 md:col-span-2"
               />
               <div className="flex flex-wrap gap-5 text-sm font-semibold text-stone-700 md:col-span-2">
                 <label className="flex items-center gap-3">

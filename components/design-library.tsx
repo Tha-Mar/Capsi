@@ -78,28 +78,22 @@ export function DesignLibrary({ designs }: DesignLibraryProps) {
 
             <div className="space-y-4 p-5">
               <div className="grid gap-3 rounded-[1.25rem] bg-stone-50 p-4 text-sm leading-6 text-stone-700">
-                <p>
-                  <span className="font-semibold text-stone-900">Material:</span>{" "}
-                  {design.material}
-                </p>
-                <p>
-                  <span className="font-semibold text-stone-900">Fit:</span>{" "}
-                  {design.fit}
-                </p>
-                {design.description ? (
+                {design.about ? (
                   <p>
-                    <span className="font-semibold text-stone-900">Details:</span>{" "}
-                    {design.description}
+                    <span className="font-semibold text-stone-900">About:</span>{" "}
+                    {design.about}
                   </p>
                 ) : null}
+                <p>
+                  <span className="font-semibold text-stone-900">Availability:</span>{" "}
+                  {design.availability}
+                </p>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-rose-700">
                   {design.category}
                 </span>
-                <p className="text-right text-sm text-stone-600">
-                  {design.availability}
-                </p>
+                <p className="text-right text-sm text-stone-600">{design.collection}</p>
               </div>
             </div>
           </article>

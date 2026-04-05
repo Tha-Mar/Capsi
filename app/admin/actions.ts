@@ -15,6 +15,30 @@ async function clearFeaturedDesigns(supabase: Awaited<ReturnType<typeof createCl
   await supabase.from("designs").update({ is_featured: false }).eq("is_featured", true)
 }
 
+async function uploadDesignImage(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  file: FormDataEntryValue | null,
+) {
+  if (!(file instanceof File) || file.size === 0) {
+    return null
+  }
+
+  const extension = file.name.includes(".") ? file.name.split(".").pop() : "jpg"
+  const safeName = `${crypto.randomUUID()}.${extension}`
+  const path = `designs/${safeName}`
+  const { error } = await supabase.storage
+    .from("design-images")
+    .upload(path, file, { upsert: false })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  const { data } = supabase.storage.from("design-images").getPublicUrl(path)
+
+  return data.publicUrl
+}
+
 export async function signInAction(formData: FormData) {
   const email = getString(formData, "email")
   const password = getString(formData, "password")
@@ -48,15 +72,17 @@ export async function createDesignAction(formData: FormData) {
     await clearFeaturedDesigns(supabase)
   }
 
+  const uploadedImageUrl = await uploadDesignImage(supabase, formData.get("imageFile"))
+
   const payload = {
     name: getString(formData, "name"),
     collection: getString(formData, "collection"),
     category: getString(formData, "category"),
-    material: getString(formData, "material"),
-    fit: getString(formData, "fit"),
+    material: "",
+    fit: "",
     availability: getString(formData, "availability"),
-    description: getString(formData, "description") || null,
-    image_url: getString(formData, "imageUrl") || null,
+    description: getString(formData, "about") || null,
+    image_url: uploadedImageUrl ?? (getString(formData, "existingImageUrl") || null),
     is_featured: formData.get("isFeatured") === "on",
     is_visible: formData.get("isVisible") === "on" || formData.get("isVisible") === null,
     sort_order: (existingDesigns?.[0]?.sort_order ?? 0) + 1,
@@ -81,15 +107,17 @@ export async function updateDesignAction(formData: FormData) {
     await clearFeaturedDesigns(supabase)
   }
 
+  const uploadedImageUrl = await uploadDesignImage(supabase, formData.get("imageFile"))
+
   const payload = {
     name: getString(formData, "name"),
     collection: getString(formData, "collection"),
     category: getString(formData, "category"),
-    material: getString(formData, "material"),
-    fit: getString(formData, "fit"),
+    material: "",
+    fit: "",
     availability: getString(formData, "availability"),
-    description: getString(formData, "description") || null,
-    image_url: getString(formData, "imageUrl") || null,
+    description: getString(formData, "about") || null,
+    image_url: uploadedImageUrl ?? (getString(formData, "existingImageUrl") || null),
     is_featured: formData.get("isFeatured") === "on",
     is_visible: formData.get("isVisible") === "on",
   }

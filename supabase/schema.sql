@@ -36,6 +36,9 @@ execute function public.set_updated_at();
 
 alter table public.designs enable row level security;
 
+drop policy if exists "Public can read visible designs" on public.designs;
+drop policy if exists "Authenticated users can manage designs" on public.designs;
+
 create policy "Public can read visible designs"
 on public.designs
 for select
@@ -48,6 +51,40 @@ for all
 to authenticated
 using (true)
 with check (true);
+
+insert into storage.buckets (id, name, public)
+values ('design-images', 'design-images', true)
+on conflict (id) do nothing;
+
+drop policy if exists "Public can view design images" on storage.objects;
+drop policy if exists "Authenticated users can upload design images" on storage.objects;
+drop policy if exists "Authenticated users can update design images" on storage.objects;
+drop policy if exists "Authenticated users can delete design images" on storage.objects;
+
+create policy "Public can view design images"
+on storage.objects
+for select
+to public
+using (bucket_id = 'design-images');
+
+create policy "Authenticated users can upload design images"
+on storage.objects
+for insert
+to authenticated
+with check (bucket_id = 'design-images');
+
+create policy "Authenticated users can update design images"
+on storage.objects
+for update
+to authenticated
+using (bucket_id = 'design-images')
+with check (bucket_id = 'design-images');
+
+create policy "Authenticated users can delete design images"
+on storage.objects
+for delete
+to authenticated
+using (bucket_id = 'design-images');
 
 insert into public.designs (
   name,

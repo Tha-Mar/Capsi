@@ -77,7 +77,7 @@ const fitNotes = [
   "Designed to stay secure through long shifts.",
 ] as const
 
-const fallbackCategories = [
+export const designCategories = [
   "Popular",
   "Sports",
   "Floral",
@@ -92,10 +92,8 @@ export type CatalogDesign = {
   name: string
   collection: string
   category: string
-  material: string
-  fit: string
+  about: string | null
   availability: string
-  description: string | null
   imageUrl: string
   isFeatured: boolean
   isVisible: boolean
@@ -108,10 +106,10 @@ type DesignRow = {
   name: string
   collection: string
   category: string
+  description: string | null
   material: string
   fit: string
   availability: string
-  description: string | null
   image_url: string | null
   is_featured: boolean | null
   sort_order: number | null
@@ -124,7 +122,7 @@ function createPlaceholderDesigns(): CatalogDesign[] {
     const patternName = patternThemes[index % patternThemes.length]
     const material = materialNotes[index % materialNotes.length]
     const fit = fitNotes[index % fitNotes.length]
-    const category = fallbackCategories[index % fallbackCategories.length]
+    const category = designCategories[index % designCategories.length]
     const designNumber = String(index + 1).padStart(2, "0")
     const isFeatured = index === 0
 
@@ -133,16 +131,14 @@ function createPlaceholderDesigns(): CatalogDesign[] {
       name: isFeatured ? "Pink Fox Print" : `${colorway.accent} ${patternName}`,
       collection: `Fabric Design ${designNumber}`,
       category,
-      material,
-      fit,
       availability:
         index % 4 === 0 ? "Limited yardage available" : "Available for custom orders",
-      description:
+      about:
         category === "Sports"
-          ? "A spirited print for fans who want a little team energy on shift."
+          ? "A spirited handmade scrub hat for fans who want a little team energy on shift."
           : category === "Animals"
             ? "Whimsical character prints that keep the look playful."
-            : null,
+            : `${material} ${fit}`,
       imageUrl: isFeatured ? "/DrWoof_Jan24_Ecomm8198-web_1600x.webp" : "",
       isFeatured,
       isVisible: true,
@@ -164,10 +160,8 @@ function mapDesignRow(row: DesignRow, index: number): CatalogDesign {
     name: row.name,
     collection: row.collection,
     category: row.category,
-    material: row.material,
-    fit: row.fit,
+    about: row.description || `${row.material} ${row.fit}`.trim() || null,
     availability: row.availability,
-    description: row.description,
     imageUrl: row.image_url || "",
     isFeatured: Boolean(row.is_featured),
     isVisible: row.is_visible ?? true,
