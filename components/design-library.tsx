@@ -6,16 +6,13 @@ import type { CatalogDesign } from "@/lib/design-shared"
 
 type DesignLibraryProps = {
   designs: CatalogDesign[]
+  categories: string[]
 }
 
-export function DesignLibrary({ designs }: DesignLibraryProps) {
-  const categories = useMemo(() => {
-    const values = new Set(designs.map((design) => design.category))
+export function DesignLibrary({ designs, categories }: DesignLibraryProps) {
+  const allCategories = useMemo(() => ["All", ...categories] as const, [categories])
 
-    return ["All", ...Array.from(values)] as const
-  }, [designs])
-
-  const [activeCategory, setActiveCategory] = useState<(typeof categories)[number]>(
+  const [activeCategory, setActiveCategory] = useState<(typeof allCategories)[number]>(
     "All",
   )
 
@@ -31,7 +28,7 @@ export function DesignLibrary({ designs }: DesignLibraryProps) {
           Design Library
         </h2>
         <div className="flex flex-wrap gap-3">
-          {categories.map((category) => (
+          {allCategories.map((category) => (
             <button
               key={category}
               type="button"
@@ -50,9 +47,12 @@ export function DesignLibrary({ designs }: DesignLibraryProps) {
 
       <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
         {filteredDesigns.map((design) => (
-          <article
+          <a
             key={design.id}
-            className="group overflow-hidden rounded-[1.5rem] border border-stone-200/80 bg-white/85 shadow-[0_18px_45px_rgba(120,84,62,0.08)] transition-transform duration-300 hover:-translate-y-1"
+            href={`sms:16308186681?body=${encodeURIComponent(
+              `Hi, I'm interested in ${design.collection} - ${design.name}.`,
+            )}`}
+            className="group block overflow-hidden rounded-[1.5rem] border border-stone-200/80 bg-white/85 shadow-[0_18px_45px_rgba(120,84,62,0.08)] transition-transform duration-300 hover:-translate-y-1"
           >
             <div className="relative aspect-[4/3] overflow-hidden">
               {design.imageUrl ? (
@@ -84,19 +84,15 @@ export function DesignLibrary({ designs }: DesignLibraryProps) {
                     {design.about}
                   </p>
                 ) : null}
-                <p>
-                  <span className="font-semibold text-stone-900">Availability:</span>{" "}
-                  {design.availability}
-                </p>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-rose-700">
                   {design.category}
                 </span>
-                <p className="text-right text-sm text-stone-600">{design.collection}</p>
+                <p className="text-right text-sm text-stone-600">Tap to text</p>
               </div>
             </div>
-          </article>
+          </a>
         ))}
       </div>
     </section>

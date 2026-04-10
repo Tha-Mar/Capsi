@@ -1,9 +1,10 @@
 import { DesignLibrary } from "@/components/design-library"
 import { SiteHero } from "@/components/site-hero"
-import { getCatalogDesigns } from "@/lib/designs"
+import { getCatalogDesigns, getDesignCategories } from "@/lib/designs"
 
 export default async function Page() {
   const designs = await getCatalogDesigns()
+  const categories = await getDesignCategories()
   const featuredDesign = designs.find((design) => design.isFeatured) ?? designs[0]
 
   return (
@@ -11,7 +12,7 @@ export default async function Page() {
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-16 px-6 py-10 md:px-10 lg:px-12">
         <SiteHero featuredDesign={featuredDesign} />
 
-        <DesignLibrary designs={designs} />
+        <DesignLibrary designs={designs} categories={categories} />
       </section>
     </main>
   )

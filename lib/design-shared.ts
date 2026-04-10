@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react"
 
-export const designCategories = [
+export const defaultDesignCategories = [
   "Popular",
   "Sports",
   "Floral",
@@ -16,7 +16,6 @@ export type CatalogDesign = {
   collection: string
   category: string
   about: string | null
-  availability: string
   imageUrl: string
   isFeatured: boolean
   isVisible: boolean

@@ -1,5 +1,12 @@
 create extension if not exists pgcrypto;
 
+create table if not exists public.categories (
+  id uuid primary key default gen_random_uuid(),
+  name text not null unique,
+  sort_order integer,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists public.designs (
   id uuid primary key default gen_random_uuid(),
   name text not null,
@@ -35,9 +42,25 @@ for each row
 execute function public.set_updated_at();
 
 alter table public.designs enable row level security;
+alter table public.categories enable row level security;
 
+drop policy if exists "Public can read categories" on public.categories;
+drop policy if exists "Authenticated users can manage categories" on public.categories;
 drop policy if exists "Public can read visible designs" on public.designs;
 drop policy if exists "Authenticated users can manage designs" on public.designs;
+
+create policy "Public can read categories"
+on public.categories
+for select
+to anon, authenticated
+using (true);
+
+create policy "Authenticated users can manage categories"
+on public.categories
+for all
+to authenticated
+using (true)
+with check (true);
 
 create policy "Public can read visible designs"
 on public.designs
@@ -51,6 +74,17 @@ for all
 to authenticated
 using (true)
 with check (true);
+
+insert into public.categories (name, sort_order)
+values
+  ('Popular', 1),
+  ('Sports', 2),
+  ('Floral', 3),
+  ('Geometric', 4),
+  ('Animals', 5),
+  ('Seasonal', 6),
+  ('Classic', 7)
+on conflict (name) do nothing;
 
 insert into storage.buckets (id, name, public)
 values ('design-images', 'design-images', true)

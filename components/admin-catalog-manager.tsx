@@ -9,12 +9,13 @@ import {
   updateDesignAction,
 } from "@/app/admin/actions"
 import {
-  designCategories,
+  defaultDesignCategories,
   type CatalogDesign,
 } from "@/lib/design-shared"
 
 type AdminCatalogManagerProps = {
   designs: CatalogDesign[]
+  categories: string[]
 }
 
 type EditableDesign = CatalogDesign
@@ -30,20 +31,19 @@ const emptyDesign: EditableDesign = {
   collection: "",
   category: "Popular",
   about: "",
-  availability: "Available for custom orders",
   imageUrl: "",
   isFeatured: false,
   isVisible: true,
   sortOrder: null,
 }
 
-export function AdminCatalogManager({ designs }: AdminCatalogManagerProps) {
-  const categories = useMemo(() => {
-    const values = new Set(designs.map((design) => design.category))
-    return ["All", ...Array.from(values)] as const
-  }, [designs])
+export function AdminCatalogManager({
+  designs,
+  categories,
+}: AdminCatalogManagerProps) {
+  const allCategories = useMemo(() => ["All", ...categories] as const, [categories])
 
-  const [activeCategory, setActiveCategory] = useState<(typeof categories)[number]>(
+  const [activeCategory, setActiveCategory] = useState<(typeof allCategories)[number]>(
     "All",
   )
   const [localDesigns, setLocalDesigns] = useState(designs)
@@ -117,7 +117,7 @@ export function AdminCatalogManager({ designs }: AdminCatalogManagerProps) {
           </button>
         </div>
         <div className="flex flex-wrap gap-3">
-          {categories.map((category) => (
+          {allCategories.map((category) => (
             <button
               key={category}
               type="button"
@@ -220,20 +220,12 @@ export function AdminCatalogManager({ designs }: AdminCatalogManagerProps) {
                   <span className="font-semibold text-stone-900">About:</span>{" "}
                   {design.about}
                 </p>
-                {design.about ? (
-                  <p>
-                    <span className="font-semibold text-stone-900">Availability:</span>{" "}
-                    {design.availability}
-                  </p>
-                ) : null}
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-rose-700">
                   {design.category}
                 </span>
-                <p className="text-right text-sm text-stone-600">
-                  {design.availability}
-                </p>
+                <p className="text-right text-sm text-stone-600">{design.collection}</p>
               </div>
             </div>
           </article>
@@ -293,12 +285,17 @@ export function AdminCatalogManager({ designs }: AdminCatalogManagerProps) {
                 required
                 className="rounded-2xl border border-stone-200 px-4 py-3"
               >
-                {designCategories.map((category) => (
+                {defaultDesignCategories.map((category) => (
                   <option key={category} value={category}>
                     {category}
                   </option>
                 ))}
               </select>
+              <input
+                name="customCategory"
+                placeholder="New custom category (optional)"
+                className="rounded-2xl border border-stone-200 px-4 py-3"
+              />
               <input
                 type="file"
                 name="imageFile"
@@ -309,13 +306,6 @@ export function AdminCatalogManager({ designs }: AdminCatalogManagerProps) {
                 type="hidden"
                 name="existingImageUrl"
                 defaultValue={formState.design.imageUrl}
-              />
-              <input
-                name="availability"
-                defaultValue={formState.design.availability}
-                required
-                placeholder="Availability"
-                className="rounded-2xl border border-stone-200 px-4 py-3"
               />
               <textarea
                 name="about"

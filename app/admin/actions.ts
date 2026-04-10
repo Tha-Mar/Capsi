@@ -15,6 +15,36 @@ async function clearFeaturedDesigns(supabase: Awaited<ReturnType<typeof createCl
   await supabase.from("designs").update({ is_featured: false }).eq("is_featured", true)
 }
 
+function resolveCategory(formData: FormData) {
+  const customCategory = getString(formData, "customCategory")
+  const selectedCategory = getString(formData, "category")
+
+  return customCategory || selectedCategory
+}
+
+async function ensureCategory(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  category: string,
+) {
+  if (!category) {
+    return
+  }
+
+  const { data: lastCategory } = await supabase
+    .from("categories")
+    .select("sort_order")
+    .order("sort_order", { ascending: false })
+    .limit(1)
+
+  await supabase.from("categories").upsert(
+    {
+      name: category,
+      sort_order: (lastCategory?.[0]?.sort_order ?? 0) + 1,
+    },
+    { onConflict: "name", ignoreDuplicates: true },
+  )
+}
+
 async function uploadDesignImage(
   supabase: Awaited<ReturnType<typeof createClient>>,
   file: FormDataEntryValue | null,
@@ -61,76 +91,93 @@ export async function signOutAction() {
 }
 
 export async function createDesignAction(formData: FormData) {
-  const supabase = await createClient()
-  const { data: existingDesigns } = await supabase
-    .from("designs")
-    .select("sort_order")
-    .order("sort_order", { ascending: false })
-    .limit(1)
+  try {
+    const supabase = await createClient()
+    const { data: existingDesigns } = await supabase
+      .from("designs")
+      .select("sort_order")
+      .order("sort_order", { ascending: false })
+      .limit(1)
 
-  if (formData.get("isFeatured") === "on") {
-    await clearFeaturedDesigns(supabase)
+    if (formData.get("isFeatured") === "on") {
+      await clearFeaturedDesigns(supabase)
+    }
+
+    const category = resolveCategory(formData)
+    await ensureCategory(supabase, category)
+    const uploadedImageUrl = await uploadDesignImage(supabase, formData.get("imageFile"))
+
+    const payload = {
+      name: getString(formData, "name"),
+      collection: getString(formData, "collection"),
+      category,
+      material: "",
+      fit: "",
+      availability: "",
+      description: getString(formData, "about") || null,
+      image_url: uploadedImageUrl ?? (getString(formData, "existingImageUrl") || null),
+      is_featured: formData.get("isFeatured") === "on",
+      is_visible:
+        formData.get("isVisible") === "on" || formData.get("isVisible") === null,
+      sort_order: (existingDesigns?.[0]?.sort_order ?? 0) + 1,
+    }
+
+    const { error } = await supabase.from("designs").insert(payload)
+
+    if (error) {
+      redirect(`/admin?error=${encodeURIComponent(error.message)}`)
+    }
+
+    revalidatePath("/")
+    revalidatePath("/admin")
+    redirect("/admin?success=created")
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unable to create the design."
+    redirect(`/admin?error=${encodeURIComponent(message)}`)
   }
-
-  const uploadedImageUrl = await uploadDesignImage(supabase, formData.get("imageFile"))
-
-  const payload = {
-    name: getString(formData, "name"),
-    collection: getString(formData, "collection"),
-    category: getString(formData, "category"),
-    material: "",
-    fit: "",
-    availability: getString(formData, "availability"),
-    description: getString(formData, "about") || null,
-    image_url: uploadedImageUrl ?? (getString(formData, "existingImageUrl") || null),
-    is_featured: formData.get("isFeatured") === "on",
-    is_visible: formData.get("isVisible") === "on" || formData.get("isVisible") === null,
-    sort_order: (existingDesigns?.[0]?.sort_order ?? 0) + 1,
-  }
-
-  const { error } = await supabase.from("designs").insert(payload)
-
-  if (error) {
-    redirect(`/admin?error=${encodeURIComponent(error.message)}`)
-  }
-
-  revalidatePath("/")
-  revalidatePath("/admin")
-  redirect("/admin?success=created")
 }
 
 export async function updateDesignAction(formData: FormData) {
-  const supabase = await createClient()
-  const id = getString(formData, "id")
+  try {
+    const supabase = await createClient()
+    const id = getString(formData, "id")
 
-  if (formData.get("isFeatured") === "on") {
-    await clearFeaturedDesigns(supabase)
+    if (formData.get("isFeatured") === "on") {
+      await clearFeaturedDesigns(supabase)
+    }
+
+    const category = resolveCategory(formData)
+    await ensureCategory(supabase, category)
+    const uploadedImageUrl = await uploadDesignImage(supabase, formData.get("imageFile"))
+
+    const payload = {
+      name: getString(formData, "name"),
+      collection: getString(formData, "collection"),
+      category,
+      material: "",
+      fit: "",
+      availability: "",
+      description: getString(formData, "about") || null,
+      image_url: uploadedImageUrl ?? (getString(formData, "existingImageUrl") || null),
+      is_featured: formData.get("isFeatured") === "on",
+      is_visible: formData.get("isVisible") === "on",
+    }
+
+    const { error } = await supabase.from("designs").update(payload).eq("id", id)
+
+    if (error) {
+      redirect(`/admin?error=${encodeURIComponent(error.message)}`)
+    }
+
+    revalidatePath("/")
+    revalidatePath("/admin")
+    redirect("/admin?success=updated")
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unable to update the design."
+    redirect(`/admin?error=${encodeURIComponent(message)}`)
   }
-
-  const uploadedImageUrl = await uploadDesignImage(supabase, formData.get("imageFile"))
-
-  const payload = {
-    name: getString(formData, "name"),
-    collection: getString(formData, "collection"),
-    category: getString(formData, "category"),
-    material: "",
-    fit: "",
-    availability: getString(formData, "availability"),
-    description: getString(formData, "about") || null,
-    image_url: uploadedImageUrl ?? (getString(formData, "existingImageUrl") || null),
-    is_featured: formData.get("isFeatured") === "on",
-    is_visible: formData.get("isVisible") === "on",
-  }
-
-  const { error } = await supabase.from("designs").update(payload).eq("id", id)
-
-  if (error) {
-    redirect(`/admin?error=${encodeURIComponent(error.message)}`)
-  }
-
-  revalidatePath("/")
-  revalidatePath("/admin")
-  redirect("/admin?success=updated")
 }
 
 export async function reorderDesignsAction(formData: FormData) {

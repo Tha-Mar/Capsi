@@ -4,7 +4,7 @@ import { redirect } from "next/navigation"
 import { signOutAction } from "@/app/admin/actions"
 import { AdminCatalogManager } from "@/components/admin-catalog-manager"
 import { SiteHero } from "@/components/site-hero"
-import { getAdminDesigns } from "@/lib/designs"
+import { getAdminDesigns, getDesignCategories } from "@/lib/designs"
 import { getSupabaseEnv } from "@/lib/supabase/env"
 import { createClient } from "@/lib/supabase/server"
 
@@ -33,6 +33,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   }
 
   const designs = await getAdminDesigns()
+  const categories = await getDesignCategories()
   const featuredDesign = designs.find((design) => design.isFeatured) ?? designs[0]
 
   return (
@@ -71,7 +72,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           adminEmail={user.email ?? undefined}
         />
 
-        <AdminCatalogManager designs={designs} />
+        <AdminCatalogManager designs={designs} categories={categories} />
       </section>
     </main>
   )

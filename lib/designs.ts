@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import {
-  designCategories,
+  defaultDesignCategories,
   type CatalogDesign,
 } from "@/lib/design-shared"
 import { getSupabaseEnv } from "@/lib/supabase/env"
@@ -87,11 +87,14 @@ type DesignRow = {
   description: string | null
   material: string
   fit: string
-  availability: string
   image_url: string | null
   is_featured: boolean | null
   sort_order: number | null
   is_visible: boolean | null
+}
+
+type CategoryRow = {
+  name: string
 }
 
 function createPlaceholderDesigns(): CatalogDesign[] {
@@ -100,7 +103,8 @@ function createPlaceholderDesigns(): CatalogDesign[] {
     const patternName = patternThemes[index % patternThemes.length]
     const material = materialNotes[index % materialNotes.length]
     const fit = fitNotes[index % fitNotes.length]
-    const category = designCategories[index % designCategories.length]
+    const category =
+      defaultDesignCategories[index % defaultDesignCategories.length]
     const designNumber = String(index + 1).padStart(2, "0")
     const isFeatured = index === 0
 
@@ -109,8 +113,6 @@ function createPlaceholderDesigns(): CatalogDesign[] {
       name: isFeatured ? "Pink Fox Print" : `${colorway.accent} ${patternName}`,
       collection: `Fabric Design ${designNumber}`,
       category,
-      availability:
-        index % 4 === 0 ? "Limited yardage available" : "Available for custom orders",
       about:
         category === "Sports"
           ? "A spirited handmade scrub hat for fans who want a little team energy on shift."
@@ -130,6 +132,36 @@ function createPlaceholderDesigns(): CatalogDesign[] {
   })
 }
 
+export async function getDesignCategories(): Promise<string[]> {
+  const env = getSupabaseEnv()
+
+  if (!env.isConfigured) {
+    return [...defaultDesignCategories]
+  }
+
+  try {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from("categories")
+      .select("name")
+      .order("sort_order", { ascending: true, nullsFirst: false })
+      .order("name", { ascending: true })
+
+    if (error || !data?.length) {
+      return [...defaultDesignCategories]
+    }
+
+    const merged = new Set([
+      ...defaultDesignCategories,
+      ...data.map((category: CategoryRow) => category.name),
+    ])
+
+    return Array.from(merged)
+  } catch {
+    return [...defaultDesignCategories]
+  }
+}
+
 function mapDesignRow(row: DesignRow, index: number): CatalogDesign {
   const colorway = colorways[index % colorways.length]
 
@@ -139,7 +171,6 @@ function mapDesignRow(row: DesignRow, index: number): CatalogDesign {
     collection: row.collection,
     category: row.category,
     about: row.description || `${row.material} ${row.fit}`.trim() || null,
-    availability: row.availability,
     imageUrl: row.image_url || "",
     isFeatured: Boolean(row.is_featured),
     isVisible: row.is_visible ?? true,
@@ -165,7 +196,7 @@ export async function getAdminDesigns(): Promise<CatalogDesign[]> {
   const { data, error } = await supabase
     .from("designs")
     .select(
-      "id, name, collection, category, material, fit, availability, description, image_url, is_featured, sort_order, is_visible",
+      "id, name, collection, category, material, fit, description, image_url, is_featured, sort_order, is_visible",
     )
     .order("sort_order", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: true })
@@ -189,7 +220,7 @@ export async function getCatalogDesigns(): Promise<CatalogDesign[]> {
     const { data, error } = await supabase
       .from("designs")
       .select(
-        "id, name, collection, category, material, fit, availability, description, image_url, is_featured, sort_order, is_visible",
+        "id, name, collection, category, material, fit, description, image_url, is_featured, sort_order, is_visible",
       )
       .eq("is_visible", true)
       .order("sort_order", { ascending: true, nullsFirst: false })
