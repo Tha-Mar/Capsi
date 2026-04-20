@@ -20,16 +20,24 @@ const heroImages = [
     className: "translate-y-4 md:translate-y-6",
     src: "/ChatGPT Image Apr 20, 2026, 12_53_03 AM.png",
   },
+  {
+    className: "translate-y-4 md:translate-y-6",
+    src: "/ChatGPT Image Apr 20, 2026, 03_20_29 AM.png",
+  },
 ]
 
 const heroImageClassName =
-  "absolute left-1/2 top-10 h-[820px] w-auto max-w-none -translate-x-1/2 object-contain md:top-14 md:h-[1040px]"
+  "absolute left-1/2 top-10 h-[620px] w-auto max-w-none -translate-x-1/2 object-contain md:top-14 md:h-[1040px]"
 
 function clamp(value: number) {
   return Math.min(Math.max(value, 0), 1)
 }
 
 function getActiveImageIndex(progress: number) {
+  if (progress > 0.48) {
+    return 4
+  }
+
   if (progress > 0.36) {
     return 3
   }
@@ -93,7 +101,7 @@ export function SiteHero({
   return (
     <div
       ref={heroRef}
-      className="relative min-h-[900px] overflow-hidden bg-[#f4eee7] md:min-h-[1120px]"
+      className="relative min-h-[680px] overflow-hidden bg-[#f4eee7] md:min-h-[1120px]"
     >
       <div
         aria-hidden="true"
@@ -121,13 +129,13 @@ export function SiteHero({
       <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-[#f4eee7]/30" />
 
       <div className="relative z-10 px-6 pt-12 md:px-10 md:pt-16 lg:px-16">
-        <h1 className="[font-family:Baloo] text-[clamp(6rem,20vw,20rem)] font-light italic leading-[0.78] text-stone-800">
+        <h1 className="[font-family:Baloo] text-[clamp(4rem,22vw,20rem)] font-light italic leading-[0.78] text-stone-800">
           Capsi
         </h1>
         <p className="ml-5 mt-4 max-w-[38rem] [font-family:PoppinsMedium] text-3xl font-bold leading-tight text-stone-800 md:ml-10 md:mt-6 md:text-5xl">
           Handmade scrub caps,
           <br />
-          made with care.
+          made with <em>care.</em>
         </p>
 
         {adminMode ? (

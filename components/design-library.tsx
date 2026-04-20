@@ -15,6 +15,7 @@ type DesignLibraryProps = {
 export function DesignLibrary({ designs, categories }: DesignLibraryProps) {
   const sectionRef = useRef<HTMLElement>(null)
   const allCategories = useMemo(() => ["All", ...categories] as const, [categories])
+  const hasDismissedRef = useRef(false)
 
   const [activeCategory, setActiveCategory] = useState<(typeof allCategories)[number]>(
     "All",
@@ -37,6 +38,11 @@ export function DesignLibrary({ designs, categories }: DesignLibraryProps) {
         return
       }
 
+      // Once dismissed, freeze state permanently until page refresh
+      if (hasDismissedRef.current) {
+        return
+      }
+
       const rect = section.getBoundingClientRect()
       const viewportHeight = window.innerHeight
 
@@ -45,7 +51,9 @@ export function DesignLibrary({ designs, categories }: DesignLibraryProps) {
         return
       }
 
-      if (rect.bottom < viewportHeight * 0.25) {
+      // Dismiss after the user has scrolled well into the section
+      if (rect.top < -viewportHeight * 0.2) {
+        hasDismissedRef.current = true
         setGuideMotionState("after")
         return
       }

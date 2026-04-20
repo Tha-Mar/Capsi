@@ -73,7 +73,7 @@ export function AboutCapsi() {
           transform: `translateY(${Math.round((1 - sectionProgress) * 120)}px)`,
         }}
       >
-        <div className="relative min-h-[320px] md:min-h-[520px]">
+        <div className="relative min-h-[360px] overflow-hidden md:min-h-[520px]">
           <Image
             src="/ChatGPT Image Apr 20, 2026, 02_05_46 AM.png"
             alt=""
