@@ -1,8 +1,11 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import Image from "next/image"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import type { CatalogDesign } from "@/lib/design-shared"
+
+type GuideMotionState = "before" | "visible" | "after"
 
 type DesignLibraryProps = {
   designs: CatalogDesign[]
@@ -10,20 +13,89 @@ type DesignLibraryProps = {
 }
 
 export function DesignLibrary({ designs, categories }: DesignLibraryProps) {
+  const sectionRef = useRef<HTMLElement>(null)
   const allCategories = useMemo(() => ["All", ...categories] as const, [categories])
 
   const [activeCategory, setActiveCategory] = useState<(typeof allCategories)[number]>(
     "All",
   )
+  const [guideMotionState, setGuideMotionState] =
+    useState<GuideMotionState>("before")
 
   const filteredDesigns =
     activeCategory === "All"
       ? designs
       : designs.filter((design) => design.category === activeCategory)
 
+  useEffect(() => {
+    let animationFrame = 0
+
+    const updateGuideMotionState = () => {
+      const section = sectionRef.current
+
+      if (!section) {
+        return
+      }
+
+      const rect = section.getBoundingClientRect()
+      const viewportHeight = window.innerHeight
+
+      if (rect.top > viewportHeight * 0.78) {
+        setGuideMotionState("before")
+        return
+      }
+
+      if (rect.bottom < viewportHeight * 0.25) {
+        setGuideMotionState("after")
+        return
+      }
+
+      setGuideMotionState("visible")
+    }
+
+    const requestUpdate = () => {
+      cancelAnimationFrame(animationFrame)
+      animationFrame = requestAnimationFrame(updateGuideMotionState)
+    }
+
+    updateGuideMotionState()
+    window.addEventListener("scroll", requestUpdate, { passive: true })
+    window.addEventListener("resize", requestUpdate)
+
+    return () => {
+      cancelAnimationFrame(animationFrame)
+      window.removeEventListener("scroll", requestUpdate)
+      window.removeEventListener("resize", requestUpdate)
+    }
+  }, [])
+
   return (
-    <section className="space-y-6">
-      <div className="space-y-4">
+    <section ref={sectionRef} className="space-y-6">
+      <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
+        <div
+          className={`design-guide-bubble-shape absolute bottom-[10.5rem] right-[5.5rem] z-20 w-[190px] opacity-0 md:bottom-[16.5rem] md:right-[12rem] md:w-[260px] ${
+            guideMotionState === "visible" ? "design-guide-bubble-in" : ""
+          } ${guideMotionState === "after" ? "design-guide-bubble-out" : ""}`}
+        >
+          <p className="relative z-10 text-center [font-family:PoppinsMedium] text-sm font-medium leading-tight text-stone-800 md:text-lg">
+            Tap a design you love, then text me to order!
+          </p>
+          <span className="design-guide-bubble-tail" aria-hidden="true" />
+        </div>
+
+        <Image
+          src="/upscaled_4x.png"
+          alt=""
+          width={1632}
+          height={2448}
+          aria-hidden="true"
+          className={`absolute bottom-[-0.5rem] right-[0.5rem] z-10 h-[240px] w-auto max-w-none opacity-0 md:bottom-[-0.25rem] md:right-[1.5rem] md:h-[380px] ${
+            guideMotionState === "visible" ? "design-guide-character-in" : ""
+          } ${guideMotionState === "after" ? "design-guide-character-out" : ""}`}
+        />
+      </div>
+
+      <div className="sticky top-4 z-30 space-y-4 rounded-2xl border border-white/70 bg-[#fff7ef]/95 px-5 py-5 shadow-[0_18px_38px_rgba(120,64,64,0.1)] backdrop-blur-md md:px-7">
         <h2 className="font-[family:var(--font-display)] text-4xl text-stone-900">
           Design Library
         </h2>

@@ -2,6 +2,172 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@font-face {
+    font-family: "Baloo";
+    src: url("../fonts/baloo/Baloo-Regular.ttf") format("truetype");
+    font-display: swap;
+    font-style: normal;
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: "PoppinsMedium";
+    src: url("../fonts/poppins/Poppins-Medium.ttf") format("truetype");
+    font-display: swap;
+    font-style: normal;
+    font-weight: 500;
+}
+
+@keyframes capsi-about-image-in {
+    0% {
+        opacity: 0;
+        transform: translate3d(-120%, 90px, 0) rotate(-18deg);
+    }
+    58% {
+        opacity: 1;
+        transform: translate3d(-40%, -24px, 0) rotate(8deg);
+    }
+    74% {
+        opacity: 1;
+        transform: translate3d(-44%, 8px, 0) rotate(-5deg);
+    }
+    88% {
+        opacity: 1;
+        transform: translate3d(-41%, -5px, 0) rotate(3deg);
+    }
+    100% {
+        opacity: 1;
+        transform: translate3d(-42%, 0, 0) rotate(0deg);
+    }
+}
+
+@keyframes capsi-about-image-out {
+    0% {
+        opacity: 1;
+        transform: translate3d(-42%, 0, 0) rotate(0deg);
+    }
+    34% {
+        opacity: 1;
+        transform: translate3d(-62%, -28px, 0) rotate(-5deg);
+    }
+    68% {
+        opacity: 0.92;
+        transform: translate3d(-94%, -12px, 0) rotate(-10deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate3d(-142%, 72px, 0) rotate(-16deg);
+    }
+}
+
+.capsi-about-image-in {
+    animation: capsi-about-image-in 1.25s cubic-bezier(0.2, 0.85, 0.24, 1) both;
+}
+
+.capsi-about-image-out {
+    animation: capsi-about-image-out 1.4s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@keyframes design-guide-character-in {
+    0% {
+        opacity: 0;
+        transform: translate3d(125%, 28px, 0) rotate(9deg);
+    }
+    68% {
+        opacity: 1;
+        transform: translate3d(-8px, -10px, 0) rotate(-3deg);
+    }
+    84% {
+        opacity: 1;
+        transform: translate3d(7px, 3px, 0) rotate(2deg);
+    }
+    100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+}
+
+@keyframes design-guide-character-out {
+    0% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+    38% {
+        opacity: 1;
+        transform: translate3d(22px, -14px, 0) rotate(4deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate3d(130%, 52px, 0) rotate(12deg);
+    }
+}
+
+@keyframes design-guide-bubble-in {
+    0% {
+        opacity: 0;
+        transform: translate3d(50px, 28px, 0) scale(0.62) rotate(7deg);
+    }
+    66% {
+        opacity: 1;
+        transform: translate3d(-6px, -4px, 0) scale(1.06) rotate(-2deg);
+    }
+    100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+    }
+}
+
+@keyframes design-guide-bubble-out {
+    0% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+    }
+    42% {
+        opacity: 1;
+        transform: translate3d(10px, -8px, 0) scale(1.09) rotate(4deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate3d(36px, 20px, 0) scale(0.2) rotate(-9deg);
+    }
+}
+
+.design-guide-character-in {
+    animation: design-guide-character-in 1.05s cubic-bezier(0.16, 0.9, 0.22, 1) both;
+}
+
+.design-guide-character-out {
+    animation: design-guide-character-out 0.58s cubic-bezier(0.45, 0, 0.55, 1) both;
+}
+
+.design-guide-bubble-in {
+    animation: design-guide-bubble-in 0.7s cubic-bezier(0.16, 0.9, 0.22, 1) both;
+}
+
+.design-guide-bubble-out {
+    animation: design-guide-bubble-out 0.28s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.design-guide-bubble-shape {
+    border: 2px solid rgba(120, 64, 64, 0.28);
+    border-radius: 1.4rem;
+    background: rgb(255, 250, 244);
+    box-shadow: 0 18px 38px rgba(120, 64, 64, 0.22);
+    padding: 1.05rem 1.15rem;
+}
+
+.design-guide-bubble-tail {
+    position: absolute;
+    right: 1.6rem;
+    bottom: -0.65rem;
+    width: 1.3rem;
+    height: 1.3rem;
+    border-right: 2px solid rgba(120, 64, 64, 0.18);
+    border-bottom: 2px solid rgba(120, 64, 64, 0.18);
+    background: rgba(255, 250, 244, 0.96);
+    transform: rotate(45deg);
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
