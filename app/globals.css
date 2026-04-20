@@ -48,6 +48,7 @@
 }
 
 :root {
+    --font-santrio: "Santrio", var(--font-display), serif;
     --background: oklch(0.985 0.01 67);
     --foreground: oklch(0.23 0.03 42);
     --card: oklch(0.995 0.005 30);

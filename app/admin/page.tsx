@@ -34,7 +34,6 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   const designs = await getAdminDesigns()
   const categories = await getDesignCategories()
-  const featuredDesign = designs.find((design) => design.isFeatured) ?? designs[0]
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.9),_rgba(255,248,243,0.85)_38%,_rgba(244,232,224,0.82)_100%)] text-stone-900">
@@ -66,11 +65,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           </form>
         </div>
 
-        <SiteHero
-          featuredDesign={featuredDesign}
-          adminMode
-          adminEmail={user.email ?? undefined}
-        />
+        <SiteHero adminMode adminEmail={user.email ?? undefined} />
 
         <AdminCatalogManager designs={designs} categories={categories} />
       </section>
