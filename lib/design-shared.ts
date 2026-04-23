@@ -1,13 +1,14 @@
 import type { CSSProperties } from "react"
 
 export const defaultDesignCategories = [
-  "Popular",
-  "Sports",
+  "Healthcare",
   "Floral",
-  "Geometric",
   "Animals",
+  "Fan Club",
+  "Dots & Scribbles",
   "Seasonal",
-  "Classic",
+  "Patriotic",
+  "Everyday",
 ] as const
 
 export type CatalogDesign = {

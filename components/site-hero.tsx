@@ -130,7 +130,7 @@ export function SiteHero({
 
       <div className="relative z-10 px-6 pt-12 md:px-10 md:pt-16 lg:px-16">
         <h1 className="[font-family:Baloo] text-[clamp(4rem,22vw,20rem)] font-light italic leading-[0.78] text-stone-800">
-          Capsi
+          Capsy
         </h1>
         <p className="ml-5 mt-4 max-w-[38rem] [font-family:PoppinsMedium] text-3xl font-bold leading-tight text-stone-800 md:ml-10 md:mt-6 md:text-5xl">
           Handmade scrub caps,

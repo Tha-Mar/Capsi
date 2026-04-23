@@ -88,7 +88,7 @@ export function AboutCapsi() {
 
         <div className="max-w-3xl">
           <p className="text-3xl font-bold text-stone-900 md:text-5xl">
-            About Capsi
+            About Capsy
           </p>
 
           <div className="mt-6 space-y-5 text-lg font-medium leading-8 text-stone-700 md:text-xl md:leading-9">
@@ -103,7 +103,7 @@ export function AboutCapsi() {
               first patient to the last.
             </p>
             <p className="text-stone-900">
-              Capsi is my way of sending a small bit of care back to the people
+              Capsy is my way of sending a small bit of care back to the people
               who spend their days caring for everyone else.
             </p>
           </div>
