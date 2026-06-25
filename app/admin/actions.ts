@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
 import { createClient } from "@/lib/supabase/server"
+import { localCatalogDesigns } from "@/lib/local-design-catalog"
+import { siteContentKeys } from "@/lib/site-content"
 
 function getString(formData: FormData, key: string) {
   const value = formData.get(key)
@@ -216,4 +218,82 @@ export async function deleteDesignAction(formData: FormData) {
   revalidatePath("/")
   revalidatePath("/admin")
   redirect("/admin?success=deleted")
+}
+
+/**
+ * One-time helper: copy the bundled local catalog into the `designs` table.
+ * Idempotent — only inserts designs whose slug is not already present, so it is
+ * safe to run more than once. Redirect calls are intentionally left outside any
+ * try/catch so Next can handle the redirect.
+ */
+export async function importLocalCatalogAction() {
+  const supabase = await createClient()
+
+  const { data: existing, error: fetchError } = await supabase
+    .from("designs")
+    .select("slug")
+
+  if (fetchError) {
+    redirect(`/admin?error=${encodeURIComponent(fetchError.message)}`)
+  }
+
+  const existingSlugs = new Set(
+    (existing ?? []).map((row) => row.slug).filter(Boolean),
+  )
+
+  const toInsert = localCatalogDesigns
+    .filter((design) => !existingSlugs.has(design.id))
+    .map((design) => ({
+      slug: design.id,
+      name: design.name,
+      collection: design.collection,
+      category: design.category,
+      material: "",
+      fit: "",
+      availability: "",
+      description: design.about,
+      image_url: design.imageUrl,
+      is_featured: design.isFeatured,
+      is_visible: design.isVisible,
+      sort_order: design.sortOrder,
+    }))
+
+  if (toInsert.length > 0) {
+    const { error } = await supabase.from("designs").insert(toInsert)
+
+    if (error) {
+      redirect(`/admin?error=${encodeURIComponent(error.message)}`)
+    }
+  }
+
+  revalidatePath("/")
+  revalidatePath("/admin")
+  redirect(`/admin?success=imported`)
+}
+
+/**
+ * Save a single editable text field (hero/about copy). Clearing the value
+ * removes the override so the public default copy is shown again. Does not
+ * redirect — inline editors stay on the page and show their own saved state.
+ */
+export async function updateSiteContentAction(formData: FormData) {
+  const key = getString(formData, "key")
+  const value = getString(formData, "value")
+
+  if (!siteContentKeys.includes(key as (typeof siteContentKeys)[number])) {
+    return
+  }
+
+  const supabase = await createClient()
+
+  if (!value) {
+    await supabase.from("site_content").delete().eq("key", key)
+  } else {
+    await supabase
+      .from("site_content")
+      .upsert({ key, value }, { onConflict: "key" })
+  }
+
+  revalidatePath("/")
+  revalidatePath("/admin")
 }

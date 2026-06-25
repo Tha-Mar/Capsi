@@ -181,7 +181,7 @@ export function AdminCatalogManager({
                 />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-stone-950/65 via-transparent to-stone-950/10" />
-              <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-3 p-4">
+              <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-3 p-4 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                 <span className="rounded-full bg-white/85 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-stone-700">
                   Drag to reorder
                 </span>
@@ -193,7 +193,18 @@ export function AdminCatalogManager({
                   >
                     Edit
                   </button>
-                  <form action={deleteDesignAction}>
+                  <form
+                    action={deleteDesignAction}
+                    onSubmit={(event) => {
+                      if (
+                        !window.confirm(
+                          `Remove "${design.name}"? This cannot be undone.`,
+                        )
+                      ) {
+                        event.preventDefault()
+                      }
+                    }}
+                  >
                     <input type="hidden" name="id" value={design.id} />
                     <button
                       type="submit"

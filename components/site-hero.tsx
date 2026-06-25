@@ -3,6 +3,8 @@
 import Image from "next/image"
 import { useEffect, useRef, useState } from "react"
 
+import { EditableText } from "@/components/editable-text"
+
 const heroImages = [
   {
     className: "",
@@ -53,12 +55,19 @@ function getActiveImageIndex(progress: number) {
   return 0
 }
 
+type SiteHeroContent = {
+  heroTitle: string
+  heroTagline: string
+}
+
 type SiteHeroProps = {
+  content: SiteHeroContent
   adminMode?: boolean
   adminEmail?: string
 }
 
 export function SiteHero({
+  content,
   adminMode = false,
   adminEmail,
 }: SiteHeroProps) {
@@ -129,14 +138,27 @@ export function SiteHero({
       <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-[#f4eee7]/30" />
 
       <div className="relative z-10 px-6 pt-12 md:px-10 md:pt-16 lg:px-16">
-        <h1 className="[font-family:Baloo] text-[clamp(4rem,22vw,20rem)] font-light italic leading-[0.78] text-stone-800">
-          Capsy
-        </h1>
-        <p className="ml-5 mt-4 max-w-[38rem] [font-family:PoppinsMedium] text-3xl font-bold leading-tight text-stone-800 md:ml-10 md:mt-6 md:text-5xl">
-          Handmade scrub caps,
-          <br />
-          made with <em>care.</em>
-        </p>
+        <EditableText
+          fieldKey="heroTitle"
+          value={content.heroTitle}
+          adminMode={adminMode}
+          label="Hero title"
+        >
+          <h1 className="[font-family:Baloo] text-[clamp(4rem,22vw,20rem)] font-light italic leading-[0.78] text-stone-800">
+            {content.heroTitle}
+          </h1>
+        </EditableText>
+        <EditableText
+          fieldKey="heroTagline"
+          value={content.heroTagline}
+          adminMode={adminMode}
+          multiline
+          label="Hero tagline"
+        >
+          <p className="ml-5 mt-4 max-w-[38rem] whitespace-pre-line [font-family:PoppinsMedium] text-3xl font-bold leading-tight text-stone-800 md:ml-10 md:mt-6 md:text-5xl">
+            {content.heroTagline}
+          </p>
+        </EditableText>
 
         {adminMode ? (
           <p className="mt-4 max-w-xl bg-[#f4eee7]/80 px-4 py-3 text-sm leading-7 text-stone-700 backdrop-blur-sm">

@@ -3,9 +3,25 @@
 import Image from "next/image"
 import { useEffect, useRef, useState } from "react"
 
+import { EditableText } from "@/components/editable-text"
+
 type ImageMotionState = "before" | "visible" | "after"
 
-export function AboutCapsi() {
+type AboutCapsiContent = {
+  aboutTitle: string
+  aboutBody: string
+}
+
+type AboutCapsiProps = {
+  content: AboutCapsiContent
+  adminMode?: boolean
+}
+
+export function AboutCapsi({ content, adminMode = false }: AboutCapsiProps) {
+  const paragraphs = content.aboutBody
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
   const sectionRef = useRef<HTMLElement>(null)
   const [imageMotionState, setImageMotionState] =
     useState<ImageMotionState>("before")
@@ -87,26 +103,37 @@ export function AboutCapsi() {
         </div>
 
         <div className="max-w-3xl">
-          <p className="text-3xl font-bold text-stone-900 md:text-5xl">
-            About Capsy
-          </p>
+          <EditableText
+            fieldKey="aboutTitle"
+            value={content.aboutTitle}
+            adminMode={adminMode}
+            label="About title"
+          >
+            <p className="text-3xl font-bold text-stone-900 md:text-5xl">
+              {content.aboutTitle}
+            </p>
+          </EditableText>
 
-          <div className="mt-6 space-y-5 text-lg font-medium leading-8 text-stone-700 md:text-xl md:leading-9">
-            <p>
-              I started making scrub caps for the doctors and nurses I know
-              because I wanted them to have something comfortable, cheerful, and
-              personal to wear through long shifts.
-            </p>
-            <p>
-              Every cap is homemade in small batches, with fabrics picked for a
-              little color, a little joy, and a fit that feels easy from the
-              first patient to the last.
-            </p>
-            <p className="text-stone-900">
-              Capsy is my way of sending a small bit of care back to the people
-              who spend their days caring for everyone else.
-            </p>
-          </div>
+          <EditableText
+            fieldKey="aboutBody"
+            value={content.aboutBody}
+            adminMode={adminMode}
+            multiline
+            label="About text"
+          >
+            <div className="mt-6 space-y-5 text-lg font-medium leading-8 text-stone-700 md:text-xl md:leading-9">
+              {paragraphs.map((paragraph, index) => (
+                <p
+                  key={index}
+                  className={
+                    index === paragraphs.length - 1 ? "text-stone-900" : undefined
+                  }
+                >
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+          </EditableText>
         </div>
       </div>
     </section>
