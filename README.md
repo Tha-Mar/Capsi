@@ -30,7 +30,7 @@ Capsy is a single-product-line catalog built with Next.js. The public homepage s
 
 ## Architecture
 
-The public catalog and the admin panel use **two separate data sources**: the homepage renders a static catalog generated from local image files, while the admin panel reads and writes the Supabase `designs` table.
+The public site and the admin panel share **one source of truth: Supabase**. The homepage reads designs and editable copy from Supabase via a read-only anonymous client, falling back to a bundled local catalog (`lib/local-design-catalog.ts` + `public/designs/*`) whenever Supabase is unconfigured or empty, so the site is never blank. The admin panel reads/writes the same Supabase tables; edits show up on the public site after revalidation.
 
 ```mermaid
 flowchart TD
@@ -44,21 +44,27 @@ flowchart TD
         Library -->|sms: deep link| Phone([Order via text])
     end
 
-    subgraph Admin["Admin panel"]
-        Login --> AdminPage["/admin (auth-gated)"]
+    subgraph Admin["Admin panel (auth-gated, inline editing)"]
+        Login --> AdminPage["/admin"]
+        AdminPage --> AdminHero["SiteHero / AboutCapsi (adminMode)"]
         AdminPage --> Manager[AdminCatalogManager]
-        Manager --> Actions[Server Actions]
+        AdminHero --> Actions[Server Actions]
+        Manager --> Actions
     end
 
-    subgraph Data["Data sources"]
-        Local[("Local catalog<br/>lib/local-design-catalog.ts<br/>+ public/designs/*")]
-        Supabase[("Supabase<br/>designs + categories<br/>+ design-images bucket")]
+    subgraph Supabase["Supabase (source of truth)"]
+        DB[("designs + categories<br/>+ site_content")]
+        Storage[("design-images bucket")]
     end
 
-    Home -->|getCatalogDesigns| Local
-    AdminPage -->|getAdminDesigns| Supabase
-    Actions -->|create / update / delete / reorder| Supabase
-    Proxy[proxy.ts] -->|refresh session| Supabase
+    Local[("Local fallback catalog<br/>lib/local-design-catalog.ts")]
+
+    Home -->|"getCatalogDesigns / getSiteContent (anon read)"| DB
+    Home -.->|fallback when empty/unconfigured| Local
+    AdminPage -->|getAdminDesigns| DB
+    Actions -->|create / update / delete / reorder / import / edit copy| DB
+    Actions -->|image upload| Storage
+    Proxy[proxy.ts] -->|refresh session| DB
 ```
 
 ## Project Structure
@@ -72,19 +78,21 @@ flowchart TD
 │   └── admin/
 │       ├── page.tsx          # Auth-gated inline catalog editor
 │       ├── login/page.tsx    # Admin sign-in
-│       └── actions.ts        # Server actions (auth, CRUD, image upload)
+│       └── actions.ts        # Server actions (auth, CRUD, import, edit copy)
 ├── components/
-│   ├── site-hero.tsx         # Scroll-driven hero image swap
-│   ├── about-capsi.tsx       # Scroll parallax about section
-│   ├── design-library.tsx    # Category filter + SMS-to-order cards
-│   ├── admin-catalog-manager.tsx
+│   ├── site-hero.tsx         # Scroll-driven hero; inline-editable in admin
+│   ├── about-capsi.tsx       # About section; inline-editable in admin
+│   ├── design-library.tsx    # Category filter + SMS-to-order cards (public)
+│   ├── admin-catalog-manager.tsx  # Admin card grid (edit/delete/reorder)
+│   ├── editable-text.tsx     # Hover-to-edit text field for admin mode
 │   ├── theme-provider.tsx
 │   └── ui/button.tsx         # shadcn/ui
 ├── lib/
-│   ├── designs.ts            # Data access (public local + admin Supabase)
+│   ├── designs.ts            # Catalog data (Supabase read + local fallback)
+│   ├── site-content.ts       # Editable hero/About copy + defaults
 │   ├── design-shared.ts      # CatalogDesign type, default categories
-│   ├── local-design-catalog.ts  # Static catalog from /public/designs
-│   └── supabase/             # client, server, proxy, env helpers
+│   ├── local-design-catalog.ts  # Bundled fallback catalog from /public/designs
+│   └── supabase/             # anon (public read), client, server, proxy, env
 ├── supabase/
 │   └── schema.sql            # Tables, RLS policies, storage bucket, seeds
 ├── public/designs/           # Local catalog images (8 categories)
@@ -122,9 +130,18 @@ The public site runs without any configuration (it uses the local catalog). The 
 - Scroll-driven hero with sequential image swapping
 - Filterable design library by category
 - Order-by-text: each design card opens an SMS draft prefilled with the design name
-- Auth-gated admin with inline catalog editing, drag-to-reorder, and image uploads
+- Auth-gated admin that edits the live site in place: inline-editable hero/About copy, plus add / edit / delete / reorder / image-upload for designs
+- One source of truth (Supabase) with a bundled local fallback so the site is never empty
 - Supabase Row Level Security: public read, authenticated write
-- Light/dark theming via next-themes
+
+## Admin Setup
+
+First-time setup for the editing panel (one-time, requires the Supabase project):
+
+1. Run `supabase/schema.sql` in the Supabase SQL editor (idempotent — safe to re-run; it also migrates an existing project).
+2. Create the owner's user in Supabase Auth, and in Authentication settings **disable public email signups** so only that account can edit (RLS grants write access to any authenticated user).
+3. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in the deployment environment.
+4. Sign in at `/admin` and click **Import existing catalog** once to copy the bundled designs into the database.
 
 ## Environment Variables
 
@@ -137,5 +154,6 @@ The public site runs without any configuration (it uses the local catalog). The 
 
 ## Notes
 
-- The public homepage and the admin panel are currently backed by **different data sources** (local files vs. Supabase). Edits made in admin do not appear on the public site until the two are reconciled.
-- The `designs` table retains `material`, `fit`, and `availability` columns from an earlier richer product model; the current admin actions write empty strings for these.
+- The public site reads from Supabase with a graceful fallback to the bundled local catalog, so it renders even before the database is seeded or if Supabase is unconfigured.
+- Editable hero/About copy lives in the `site_content` table; clearing a field reverts it to the built-in default.
+- The `designs` table retains `material`, `fit`, and `availability` columns from an earlier richer product model (now nullable and unused by the admin UI).

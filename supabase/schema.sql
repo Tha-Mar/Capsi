@@ -120,28 +120,69 @@ for delete
 to authenticated
 using (bucket_id = 'design-images');
 
-insert into public.designs (
-  name,
-  collection,
-  category,
-  material,
-  fit,
-  availability,
-  description,
-  image_url,
-  is_featured,
-  sort_order
-)
-values (
-  'Pink Fox Print',
-  'Signature Design 01',
-  'Animals',
-  'Lightweight quilting cotton with a breathable feel.',
-  'Classic tie-back fit with roomy crown coverage.',
-  'Available for custom orders',
-  'Handmade custom scrub hat in a playful fox print.',
-  '/DrWoof_Jan24_Ecomm8198-web_1600x.webp',
-  true,
-  1
-)
-on conflict do nothing;
+-- ---------------------------------------------------------------------------
+-- Migration: unify data layer for inline editing (idempotent, safe to re-run)
+-- ---------------------------------------------------------------------------
+
+-- Stable slug so the one-time catalog import can upsert without duplicates.
+alter table public.designs add column if not exists slug text;
+create unique index if not exists designs_slug_key on public.designs (slug);
+
+-- Retire unused legacy columns (kept nullable for backwards compatibility).
+alter table public.designs alter column material drop not null;
+alter table public.designs alter column fit drop not null;
+alter table public.designs alter column availability drop not null;
+
+-- Editable public text (hero + about). Public read, authenticated write.
+create table if not exists public.site_content (
+  key text primary key,
+  value text not null,
+  updated_at timestamptz not null default now()
+);
+
+drop trigger if exists set_site_content_updated_at on public.site_content;
+
+create trigger set_site_content_updated_at
+before update on public.site_content
+for each row
+execute function public.set_updated_at();
+
+alter table public.site_content enable row level security;
+
+drop policy if exists "Public can read site content" on public.site_content;
+drop policy if exists "Authenticated users can manage site content" on public.site_content;
+
+create policy "Public can read site content"
+on public.site_content
+for select
+to anon, authenticated
+using (true);
+
+create policy "Authenticated users can manage site content"
+on public.site_content
+for all
+to authenticated
+using (true)
+with check (true);
+
+-- Replace the stale placeholder categories with the live catalog's categories.
+delete from public.categories
+where name in ('Popular', 'Sports', 'Geometric', 'Classic');
+
+insert into public.categories (name, sort_order)
+values
+  ('Healthcare', 1),
+  ('Floral', 2),
+  ('Animals', 3),
+  ('Fan Club', 4),
+  ('Dots & Scribbles', 5),
+  ('Seasonal', 6),
+  ('Patriotic', 7),
+  ('Everyday', 8)
+on conflict (name) do update set sort_order = excluded.sort_order;
+
+-- Drop the original scaffolding design so the catalog starts from the real
+-- import. While the table is empty the public site falls back to the bundled
+-- local catalog, so visitors always see designs.
+delete from public.designs
+where collection = 'Signature Design 01' and slug is null;

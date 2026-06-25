@@ -44,7 +44,7 @@ export default async function AdminLoginPage({
             </h1>
             <p className="mt-4 max-w-md text-sm leading-7 text-stone-300">
               This is the private editing area for the catalog. Once Supabase is
-              connected, your mom can sign in here to add, update, or remove
+              connected, the owner can sign in here to add, update, or remove
               designs from the public site.
             </p>
           </div>
@@ -53,9 +53,9 @@ export default async function AdminLoginPage({
             {!env.isConfigured ? (
               <div className="rounded-[1.5rem] border border-amber-200 bg-amber-50 p-6 text-sm leading-7 text-stone-700">
                 Add `NEXT_PUBLIC_SUPABASE_URL` and
-                `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in
-                `/Users/usid/Documents/websites/Capsi/.env.local` to
-                enable login.
+                `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to your environment
+                (`.env.local` locally, or the project&apos;s environment
+                variables in your host) to enable login.
               </div>
             ) : (
               <form action={signInAction} className="grid gap-4">

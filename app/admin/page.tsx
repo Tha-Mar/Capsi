@@ -1,10 +1,13 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
-import { signOutAction } from "@/app/admin/actions"
+import { importLocalCatalogAction, signOutAction } from "@/app/admin/actions"
+import { AboutCapsi } from "@/components/about-capsi"
 import { AdminCatalogManager } from "@/components/admin-catalog-manager"
 import { SiteHero } from "@/components/site-hero"
 import { getAdminDesigns, getDesignCategories } from "@/lib/designs"
+import { localCatalogDesigns } from "@/lib/local-design-catalog"
+import { getSiteContent } from "@/lib/site-content"
 import { getSupabaseEnv } from "@/lib/supabase/env"
 import { createClient } from "@/lib/supabase/server"
 
@@ -34,6 +37,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   const designs = await getAdminDesigns()
   const categories = await getDesignCategories()
+  const content = await getSiteContent()
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.9),_rgba(255,248,243,0.85)_38%,_rgba(244,232,224,0.82)_100%)] text-stone-900">
@@ -65,7 +69,38 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           </form>
         </div>
 
-        <SiteHero adminMode adminEmail={user.email ?? undefined} />
+        <p className="rounded-[1.25rem] border border-stone-200 bg-white/70 px-5 py-4 text-sm leading-6 text-stone-600">
+          You are editing the live site. Hover the hero title, tagline, and the
+          About text to edit them in place, and manage the catalog below. Changes
+          save straight to the public site.
+        </p>
+
+        <SiteHero content={content} adminMode adminEmail={user.email ?? undefined} />
+
+        <section className="rounded-[1.75rem] border border-stone-200 bg-[#f8f3ee] px-6 py-8 md:px-10">
+          <AboutCapsi content={content} adminMode />
+        </section>
+
+        {designs.length === 0 ? (
+          <form
+            action={importLocalCatalogAction}
+            className="rounded-[1.5rem] border border-amber-200 bg-amber-50 px-5 py-5"
+          >
+            <p className="text-sm font-semibold text-stone-800">
+              Your catalog database is empty.
+            </p>
+            <p className="mt-1 text-sm leading-6 text-stone-600">
+              Import the {localCatalogDesigns.length} designs that currently ship
+              with the site to start managing them here. This is safe to run once.
+            </p>
+            <button
+              type="submit"
+              className="mt-3 rounded-full bg-stone-900 px-5 py-2.5 text-sm font-semibold text-white"
+            >
+              Import existing catalog
+            </button>
+          </form>
+        ) : null}
 
         <AdminCatalogManager designs={designs} categories={categories} />
       </section>
