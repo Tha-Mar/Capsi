@@ -80,27 +80,39 @@ export function AboutCapsi({ content, adminMode = false }: AboutCapsiProps) {
   return (
     <section
       ref={sectionRef}
-      className="relative min-h-[150vh] [font-family:PoppinsMedium]"
+      className={`relative [font-family:PoppinsMedium] ${
+        adminMode ? "" : "min-h-[150vh]"
+      }`}
     >
       <div
-        className="sticky top-0 grid min-h-screen content-center gap-8 py-14 md:grid-cols-[0.72fr_1.28fr] md:items-center md:gap-10 md:py-20"
-        style={{
-          opacity: 0.84 + sectionProgress * 0.16,
-          transform: `translateY(${Math.round((1 - sectionProgress) * 120)}px)`,
-        }}
+        className={
+          adminMode
+            ? "py-6"
+            : "sticky top-0 grid min-h-screen content-center gap-8 py-14 md:grid-cols-[0.72fr_1.28fr] md:items-center md:gap-10 md:py-20"
+        }
+        style={
+          adminMode
+            ? undefined
+            : {
+                opacity: 0.84 + sectionProgress * 0.16,
+                transform: `translateY(${Math.round((1 - sectionProgress) * 120)}px)`,
+              }
+        }
       >
-        <div className="relative min-h-[360px] overflow-hidden md:min-h-[520px]">
-          <Image
-            src="/ChatGPT Image Apr 20, 2026, 02_05_46 AM.png"
-            alt=""
-            width={1024}
-            height={1536}
-            aria-hidden="true"
-            className={`absolute bottom-0 left-1/2 h-[340px] w-auto max-w-none object-contain opacity-0 md:h-[500px] ${
-              imageMotionState === "visible" ? "capsi-about-image-in" : ""
-            } ${imageMotionState === "after" ? "capsi-about-image-out" : ""}`}
-          />
-        </div>
+        {adminMode ? null : (
+          <div className="relative min-h-[360px] overflow-hidden md:min-h-[520px]">
+            <Image
+              src="/ChatGPT Image Apr 20, 2026, 02_05_46 AM.png"
+              alt=""
+              width={1024}
+              height={1536}
+              aria-hidden="true"
+              className={`absolute bottom-0 left-1/2 h-[340px] w-auto max-w-none object-contain opacity-0 md:h-[500px] ${
+                imageMotionState === "visible" ? "capsi-about-image-in" : ""
+              } ${imageMotionState === "after" ? "capsi-about-image-out" : ""}`}
+            />
+          </div>
+        )}
 
         <div className="max-w-3xl">
           <EditableText
